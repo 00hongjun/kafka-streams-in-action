@@ -69,20 +69,21 @@ public class KafkaStreamsJoinsApp {
         int COFFEE_PURCHASE = 0;
         int ELECTRONICS_PURCHASE = 1;
 
-        KStream<String, Purchase> transactionStream = builder.stream( "transactions", Consumed.with(Serdes.String(), purchaseSerde)).map(custIdCCMasking);
+        KStream<String, Purchase> transactionStream = builder.stream( "transactions", Consumed.with(Serdes.String(), purchaseSerde)).map(custIdCCMasking); /** selectKey 처리 노드를 삽입 */
 
         KStream<String, Purchase>[] branchesStream = transactionStream.selectKey((k,v)-> v.getCustomerId()).branch(coffeePurchase, electronicPurchase);
 
         KStream<String, Purchase> coffeeStream = branchesStream[COFFEE_PURCHASE];
         KStream<String, Purchase> electronicsStream = branchesStream[ELECTRONICS_PURCHASE];
 
-        ValueJoiner<Purchase, Purchase, CorrelatedPurchase> purchaseJoiner = new PurchaseJoiner();
-        JoinWindows twentyMinuteWindow =  JoinWindows.of(60 * 1000 * 20);
+        ValueJoiner<Purchase, Purchase, CorrelatedPurchase> purchaseJoiner = new PurchaseJoiner(); /** 조인을 수행하는 ValueJoiner 인스턴스 */
+        JoinWindows twentyMinuteWindow =  JoinWindows.of(60 * 1000 * 20); /** 타임 스탬프로 20분 이내면 조인 발생 */
 
-        KStream<String, CorrelatedPurchase> joinedKStream = coffeeStream.join(electronicsStream,
-                                                                              purchaseJoiner,
-                                                                              twentyMinuteWindow,
-                                                                              Joined.with(stringSerde,
+        /** 내부 join 처리 */
+        KStream<String, CorrelatedPurchase> joinedKStream = coffeeStream.join(electronicsStream, /** 조인 할 가전 구매 스트림 */
+                                                                              purchaseJoiner, /** ValueJoiner */
+                                                                              twentyMinuteWindow, /** [JoinWindows] 인스턴스, 조인에 포함 될 두 값 사이의 최대 시간차이 */
+                                                                              Joined.with(stringSerde, /** 조인을 수행하기 위한 선택적 매개변수 */
                                                                                           purchaseSerde,
                                                                                           purchaseSerde));
 

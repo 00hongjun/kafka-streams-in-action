@@ -71,21 +71,21 @@ public class ZMartKafkaStreamsAddStateApp {
 
          // adding State to processor
         String rewardsStateStoreName = "rewardsPointsStore";
-        RewardsStreamPartitioner streamPartitioner = new RewardsStreamPartitioner();
+        RewardsStreamPartitioner streamPartitioner = new RewardsStreamPartitioner(); /** 고객 id이용 */
 
-        KeyValueBytesStoreSupplier storeSupplier = Stores.inMemoryKeyValueStore(rewardsStateStoreName);
-        StoreBuilder<KeyValueStore<String, Integer>> storeBuilder = Stores.keyValueStoreBuilder(storeSupplier, Serdes.String(), Serdes.Integer());
+        KeyValueBytesStoreSupplier storeSupplier = Stores.inMemoryKeyValueStore(rewardsStateStoreName); /** 인메모리 저장소 [StateStore] supplier 생성 */
+        StoreBuilder<KeyValueStore<String, Integer>> storeBuilder = Stores.keyValueStoreBuilder(storeSupplier, Serdes.String(), Serdes.Integer()); /** StoreBuilder를 생성 */
 
-        builder.addStateStore(storeBuilder);
+        builder.addStateStore(storeBuilder); /** StreamsBuilder에 상태저장소 추가, 토폴로지에 추가한다 */
 
-        KStream<String, Purchase> transByCustomerStream = purchaseKStream.through( "customer_transactions", Produced.with(stringSerde, purchaseSerde, streamPartitioner));
+        KStream<String, Purchase> transByCustomerStream = purchaseKStream.through( "customer_transactions", Produced.with(stringSerde, purchaseSerde, streamPartitioner)); /** [KStream.through]로 KStream을 생성한다*/
 
 
         KStream<String, RewardAccumulator> statefulRewardAccumulator = transByCustomerStream.transformValues(() ->  new PurchaseRewardTransformer(rewardsStateStoreName),
-                rewardsStateStoreName);
+                rewardsStateStoreName); /** 상태 변환 */
 
         statefulRewardAccumulator.print(Printed.<String, RewardAccumulator>toSysOut().withLabel("rewards"));
-        statefulRewardAccumulator.to("rewards", Produced.with(stringSerde, rewardAccumulatorSerde));
+        statefulRewardAccumulator.to("rewards", Produced.with(stringSerde, rewardAccumulatorSerde)); /** 결과를 토픽에 씀 */
 
 
 

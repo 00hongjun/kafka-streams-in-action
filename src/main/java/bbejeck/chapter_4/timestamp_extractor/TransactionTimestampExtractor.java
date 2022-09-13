@@ -9,7 +9,7 @@ public class TransactionTimestampExtractor implements TimestampExtractor {
 
     @Override
     public long extract(ConsumerRecord<Object, Object> record, long previousTimestamp) {
-        Purchase purchasePurchaseTransaction = (Purchase) record.value();
-        return purchasePurchaseTransaction.getPurchaseDate().getTime();
+        Purchase purchasePurchaseTransaction = (Purchase) record.value(); /** 카프카에 보내진 key/value 쌍에서 Purchase 객체를 찾음 */
+        return purchasePurchaseTransaction.getPurchaseDate().getTime(); /** 구매 시점에 기록된 타임스탬프를 반환 */
     }
 }
