@@ -39,7 +39,7 @@ public class PurchaseRewardTransformer implements ValueTransformer<Purchase, Rew
         if (accumulatedSoFar != null) {
              rewardAccumulator.addRewardPoints(accumulatedSoFar); /** rewardAccumulator에 기존의 누적된 포인트를 더해준다 */
         }
-        stateStore.put(rewardAccumulator.getCustomerId(), rewardAccumulator.getTotalRewardPoints());
+        stateStore.put(rewardAccumulator.getCustomerId(), rewardAccumulator.getTotalRewardPoints()); /** 새로운 합계를 상태 저장소에 저장 */
 
         return rewardAccumulator;
 

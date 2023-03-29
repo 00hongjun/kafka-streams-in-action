@@ -23,11 +23,11 @@ package bbejeck.model;
  */
 public class RewardAccumulator {
 
-    private String customerId;
-    private double purchaseTotal;
-    private int totalRewardPoints;
-    private int currentRewardPoints;
-    private int daysFromLastPurchase;
+    private String customerId; // 고객 ID
+    private double purchaseTotal; // 총 구매 금액
+    private int totalRewardPoints; // 누적 포인트
+    private int currentRewardPoints; // 현재 보상 포인트
+    private int daysFromLastPurchase; // 마지막 구매 날짜
 
     private RewardAccumulator(String customerId, double purchaseTotal, int rewardPoints) {
         this.customerId = customerId;

@@ -11,6 +11,9 @@ import java.util.List;
 
 public class PurchaseJoiner implements ValueJoiner<Purchase, Purchase, CorrelatedPurchase> {
 
+    /**
+     * Purchase 2개를 인자로 받아 CorrelatedPurchase를 반환한다.
+     */
     @Override
     public CorrelatedPurchase apply(Purchase purchase, Purchase otherPurchase) {
 
