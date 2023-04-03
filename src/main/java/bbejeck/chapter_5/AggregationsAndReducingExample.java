@@ -67,6 +67,12 @@ public class AggregationsAndReducingExample {
 
         StreamsBuilder builder = new StreamsBuilder();
 
+        /**
+         * withOffsetResetPolicy(EARLIEST) :  특정 토픽을 소비하는 소스 프로세서
+         * mapValues(st -> ShareVolume.newBuilder(st).build()) : StockTransaction -> ShareVolume 객체로 매핑
+         * groupBy((k, v) -> v.getSymbol(), Serialized.with(stringSerde, shareVolumeSerde)) : 주식 종목 코드에 따른 ShareVolume 객체를 그룹화
+         * reduce(ShareVolume::sum) : 거래량을 롤링 집계하기 위한 ShareVolume 객체 리듀스
+         */
         KTable<String, ShareVolume> shareVolume = builder.stream(STOCK_TRANSACTIONS_TOPIC,
                 Consumed.with(stringSerde, stockTransactionSerde)
                         .withOffsetResetPolicy(EARLIEST))
@@ -75,6 +81,14 @@ public class AggregationsAndReducingExample {
                 .reduce(ShareVolume::sum);
 
 
+        /**
+         * shareVolume.groupBy((k, v) -> KeyValue.pair(v.getIndustry(), v), Serialized.with(stringSerde, shareVolumeSerde)) : 산업별 그룹화하고 필요한 serdes를 제공
+         * aggregate(() -> fixedQueue, : 이 집계 초기화는 FixedSizePriorityQueue 클래스의 인스턴스를 사용했다. (데모 목적)
+         * (k, v, agg) -> agg.add(v), : 집계의 add 메서드가 새 업데이트를 추가
+         * (k, v, agg) -> agg.remove(v), : 같은 key의 record가 있다면, 기존 record를 제거한다.
+         * Materialized.with(stringSerde, fixedSizePriorityQueueSerde)): 집계(aggregator)를 위한 serde
+         *
+         */
         shareVolume.groupBy((k, v) -> KeyValue.pair(v.getIndustry(), v), Serialized.with(stringSerde, shareVolumeSerde))
                 .aggregate(() -> fixedQueue,
                         (k, v, agg) -> agg.add(v),
